@@ -15,7 +15,7 @@ def subtract(a, b):
 @app.route('/')
 def welcome():
     return jsonify({
-        "message": "Welcome to my Python Application!",
+        "message": "Welcome to Web API!",
         "status": "Success",
         "service": "flask-app"
     })
