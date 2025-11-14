@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy source code
+COPY src/ ./src/
 
 # Create non-root user
 RUN useradd -m -r appuser && chown -R appuser /app
@@ -25,5 +25,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD curl -f http://localhost:8000/health || exit 1
 
-# Command to run your application
-CMD ["python", "main.py"]
+# Change to src directory and run
+WORKDIR /app/src
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "main:app"]
