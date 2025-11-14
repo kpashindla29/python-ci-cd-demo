@@ -8,4 +8,4 @@ def test_add_function():
 def test_subtarct_function():
     assert subtract(5, 3) == 2
     assert subtract(0, 0) == 0
-    assert subtract(10, 5) == 5
+    assert subtract(10, 5) == 55
