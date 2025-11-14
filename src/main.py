@@ -16,7 +16,7 @@ def subtract(a, b):
 def welcome():
     return jsonify({
         "message": "Welcome to my Python Application!",
-        "status": "success",
+        "status": "Success",
         "service": "flask-app"
     })
 
