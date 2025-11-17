@@ -1,5 +1,9 @@
-
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import time
+import logging
+from logging.handlers import RotatingFileHandler
+import os
 
 app = Flask(__name__)
 
@@ -12,15 +16,58 @@ def subtract(a, b):
 
 
 
+# Configure logging
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_handler = RotatingFileHandler('/var/log/flask-app.log', maxBytes=10000000, backupCount=5)
+log_handler.setFormatter(log_formatter)
+app.logger.addHandler(log_handler)
+app.logger.setLevel(logging.INFO)
+
+# Prometheus metrics
+REQUEST_COUNT = Counter(
+    'flask_http_request_count_total',
+    'Total HTTP Request Count',
+    ['method', 'endpoint', 'http_status']
+)
+
+REQUEST_LATENCY = Histogram(
+    'flask_http_request_duration_seconds',
+    'HTTP Request Latency',
+    ['method', 'endpoint']
+)
+
+@app.before_request
+def before_request():
+    request.start_time = time.time()
+
+@app.after_request
+def after_request(response):
+    # Calculate request latency
+    latency = time.time() - request.start_time
+    REQUEST_LATENCY.labels(request.method, request.path).observe(latency)
+    
+    # Count requests
+    REQUEST_COUNT.labels(request.method, request.path, response.status_code).inc()
+    
+    # Log request
+    app.logger.info(f'{request.method} {request.path} {response.status_code} {latency:.4f}s')
+    
+    return response
+
+@app.route('/metrics')
+def metrics():
+    return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
+
 @app.route('/')
-def welcome():
-    return jsonify({
-        "message": "Welcome to Web API, Hello........!",
-        "status": "Success",
-        "service": "flask-app"
-    })
+def hello():
+    app.logger.info('Hello endpoint called')
+    return jsonify({"message": "Hello, World!"})
 
-
+@app.route('/health')
+def health():
+    return jsonify({"status": "healthy"})
 
 if __name__ == '__main__':
+    # Create log directory if it doesn't exist
+    os.makedirs('/var/log', exist_ok=True)
     app.run(host='0.0.0.0', port=8000, debug=False)
