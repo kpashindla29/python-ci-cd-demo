@@ -16,27 +16,12 @@ def subtract(a, b):
 
 
 
-# Configure logging - use accessible path
-log_dir = os.path.expanduser('~/flask-app/logs')
-# Alternative: log_dir = '/var/log/flask-app'  # if you created with proper permissions
-
-# Create log directory if it doesn't exist
-os.makedirs(log_dir, exist_ok=True)
-
-log_file = os.path.join(log_dir, 'flask-app.log')
-
 # Configure logging
 log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-log_handler = RotatingFileHandler(log_file, maxBytes=10000000, backupCount=5)
+log_handler = RotatingFileHandler('/var/log/flask-app.log', maxBytes=10000000, backupCount=5)
 log_handler.setFormatter(log_formatter)
-
 app.logger.addHandler(log_handler)
 app.logger.setLevel(logging.INFO)
-
-# Also add console handler for development
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(log_formatter)
-app.logger.addHandler(console_handler)
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
@@ -83,4 +68,6 @@ def health():
     return jsonify({"status": "healthy"})
 
 if __name__ == '__main__':
+    # Create log directory if it doesn't exist
+    os.makedirs('/var/log', exist_ok=True)
     app.run(host='0.0.0.0', port=8000, debug=False)
