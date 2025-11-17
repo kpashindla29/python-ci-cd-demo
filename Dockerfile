@@ -17,7 +17,7 @@ COPY src/ ./src/
 # Create non-root user
 RUN useradd -m -r appuser && chown -R appuser /app
 
-RUN mkdir -p /var/log/flask-app && chown appuser:appuser /var/log/flask-app
+RUN mkdir -p ~/flask-app/logs && chown appuser:appuser ~/flask-app/logs
 
 USER appuser
 
