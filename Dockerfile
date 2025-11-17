@@ -30,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=3s \
 
 # Change to src directory and run
 WORKDIR /app/src
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "main:app"]
